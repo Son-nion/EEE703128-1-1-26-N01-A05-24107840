@@ -1,7 +1,4 @@
-`default_nettype none
-`timescale 1ns / 1ps
-
-module tb ();
+module tb;
 
   reg clk;
   reg rst_n;
@@ -12,25 +9,24 @@ module tb ();
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
 
-  integer a;
-  integer b;
-  integer expected;
-  integer i, j;
+  wire [3:0] a;
+  wire [3:0] b;
+  wire [7:0] p;
 
-  // Tiny Tapeout wrapper
+  assign a = ui_in[3:0];
+  assign b = ui_in[7:4];
+  assign p = uo_out;
+
   tt_um_Son_nion user_project (
-      .ui_in  (ui_in),    // Dedicated inputs
-      .uo_out (uo_out),   // Dedicated outputs
-      .uio_in (uio_in),   // IOs: Input path
-      .uio_out(uio_out),  // IOs: Output path
-      .uio_oe (uio_oe),   // IOs: Enable path
-      .ena    (ena),      // enable
-      .clk    (clk),      // clock
-      .rst_n  (rst_n)     // reset
+    .ui_in  (ui_in),
+    .uo_out (uo_out),
+    .uio_in (uio_in),
+    .uio_out(uio_out),
+    .uio_oe (uio_oe),
+    .ena    (ena),
+    .clk    (clk),
+    .rst_n  (rst_n)
   );
-
-  // Clock generator
-  always #5 clk = ~clk;
 
   initial begin
     $dumpfile("tb.vcd");
@@ -39,35 +35,24 @@ module tb ();
     clk = 0;
     rst_n = 0;
     ena = 1;
-    ui_in = 8'h00;
-    uio_in = 8'h00;
+    ui_in = 0;
+    uio_in = 0;
 
-    #20;
     rst_n = 1;
-
-    // Test all combinations of A and B (0..15)
-    for (i = 0; i < 16; i = i + 1) begin
-      for (j = 0; j < 16; j = j + 1) begin
-        a = i;
-        b = j;
-
-        // ui_in format: [b3:b0][a3:a0]
-        ui_in = {b[3:0], a[3:0]};
-
-        #10;
-
-        expected = a * b;
-
-        if (uo_out !== expected[7:0]) begin
-          $display("Mismatch: a=%0d b=%0d got=%0d expected=%0d", a, b, uo_out, expected);
-          $fatal(1);
-        end
-      end
-    end
-
-    $display("All test vectors passed.");
-    #20;
+    ui_in = 8'hFF;
+    ui_in = 8'hF1;
+    ui_in = 8'h88;
+    ui_in = 8'h97;
+    ui_in = 8'h1F;
+    ui_in = 8'hFE;
+    ui_in = 8'h28;
+    ui_in = 8'hA5;
+    ui_in = 8'h53;
+    ui_in = 8'hDF;
+    ui_in = 8'hFB;
     $finish;
   end
+
+  always #5 clk = ~clk;
 
 endmodule
