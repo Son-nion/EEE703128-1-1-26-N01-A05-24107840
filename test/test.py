@@ -35,6 +35,7 @@ async def test_project(dut):
         dut.ui_in.value = (b << 4) | a
         await ClockCycles(dut.clk, 1)
         actual = int(dut.uo_out.value)
+        print(f"a={a}, b={b}, ui_in=0x{int(dut.ui_in.value):02x}, uo_out=0x{actual:02x}, expected=0x{expected:02x}")
         assert actual == expected, f"a={a}, b={b}, got={actual}, expected={expected}"
 
     # Keep testing the module by changing the input values, waiting for
