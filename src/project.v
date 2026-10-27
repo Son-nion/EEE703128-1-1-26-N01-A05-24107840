@@ -20,7 +20,7 @@ module tt_um_Son_nion (
   assign uio_oe  = 8'b00000000;
 
   wire _unused = &{ena, clk, rst_n, 1'b0};
-  A05_array_mult4x4 multiplier_inst (
+  A05_array_mult4x4 mult_inst (
         .a (ui_in[3:0]),
         .b (ui_in[7:4]),
         .p (uo_out)
