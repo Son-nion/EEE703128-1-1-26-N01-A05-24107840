@@ -1,6 +1,6 @@
 module A05_array_mult4x4 (
     input  [3:0] a,
-    input  [7:4] b,
+    input  [3:0] b,
     output [7:0] p
 );
 
