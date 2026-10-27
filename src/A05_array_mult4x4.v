@@ -1,51 +1,97 @@
 `default_nettype none
 
 module A05_array_mult4x4 (
-    input  [3:0] a,
-    input  [3:0] b,
-    output [7:0] p
+    input  wire [3:0] a,
+    input  wire [3:0] b,
+    output wire [7:0] p
 );
 
     wire [3:0] pp0, pp1, pp2, pp3;
-    genvar j;
-    generate
-        for (j = 0; j < 4; j = j + 1) begin : GEN_PP
-            assign pp0[j] = a[j] & b[0];
-            assign pp1[j] = a[j] & b[1];
-            assign pp2[j] = a[j] & b[2];
-            assign pp3[j] = a[j] & b[3];
-        end
-    endgenerate
+
+    assign pp0[0] = a[0] & b[0];
+    assign pp0[1] = a[1] & b[0];
+    assign pp0[2] = a[2] & b[0];
+    assign pp0[3] = a[3] & b[0];
+
+    assign pp1[0] = a[0] & b[1];
+    assign pp1[1] = a[1] & b[1];
+    assign pp1[2] = a[2] & b[1];
+    assign pp1[3] = a[3] & b[1];
+
+    assign pp2[0] = a[0] & b[2];
+    assign pp2[1] = a[1] & b[2];
+    assign pp2[2] = a[2] & b[2];
+    assign pp2[3] = a[3] & b[2];
+
+    assign pp3[0] = a[0] & b[3];
+    assign pp3[1] = a[1] & b[3];
+    assign pp3[2] = a[2] & b[3];
+    assign pp3[3] = a[3] & b[3];
 
     wire [7:0] row0, row1, row2, row3;
-    wire [7:0] s12, s123, sfinal;
+    wire [7:0] sum01, sum12, sum_final;
 
     assign row0 = {4'b0000, pp0};
     assign row1 = {3'b000, pp1, 1'b0};
     assign row2 = {2'b00, pp2, 2'b00};
     assign row3 = {1'b0, pp3, 3'b000};
 
-    // 8-bit adder, built from bitwise logic only
-    wire c1, c2, c3;
-    wire [7:0] carry;
+    add8 u_add01 (
+        .a(row0),
+        .b(row1),
+        .sum(sum01),
+        .carry()
+    );
 
-    assign s12[0] = row0[0] ^ row1[0];
-    assign carry[0] = row0[0] & row1[0];
+    add8 u_add12 (
+        .a(sum01),
+        .b(row2),
+        .sum(sum12),
+        .carry()
+    );
 
-    genvar i;
-    generate
-        for (i = 1; i < 8; i = i + 1) begin : GEN_ADD1
-            assign s12[i] = row0[i] ^ row1[i] ^ carry[i-1];
-            assign carry[i] = (row0[i] & row1[i]) |
-                              (row0[i] & carry[i-1]) |
-                              (row1[i] & carry[i-1]);
-        end
-    endgenerate
+    add8 u_add_final (
+        .a(sum12),
+        .b(row3),
+        .sum(sum_final),
+        .carry()
+    );
 
-    assign s123[0] = s12[0] ^ row2[0];
-    assign carry[0] = s12[0] & row2[0];  // not safe if reused; better use a separate carry wire
+    assign p = sum_final;
 
-    // Better: use a full adder module instead of reusing single carry
-    // This pattern is clearer and less error-prone.
+endmodule
+
+module add8 (
+    input  wire [7:0] a,
+    input  wire [7:0] b,
+    output wire [7:0] sum,
+    output wire carry
+);
+
+    wire c0, c1, c2, c3, c4, c5, c6;
+
+    assign sum[0] = a[0] ^ b[0];
+    assign c0 = a[0] & b[0];
+
+    assign sum[1] = a[1] ^ b[1] ^ c0;
+    assign c1 = (a[1] & b[1]) | (a[1] & c0) | (b[1] & c0);
+
+    assign sum[2] = a[2] ^ b[2] ^ c1;
+    assign c2 = (a[2] & b[2]) | (a[2] & c1) | (b[2] & c1);
+
+    assign sum[3] = a[3] ^ b[3] ^ c2;
+    assign c3 = (a[3] & b[3]) | (a[3] & c2) | (b[3] & c2);
+
+    assign sum[4] = a[4] ^ b[4] ^ c3;
+    assign c4 = (a[4] & b[4]) | (a[4] & c3) | (b[4] & c3);
+
+    assign sum[5] = a[5] ^ b[5] ^ c4;
+    assign c5 = (a[5] & b[5]) | (a[5] & c4) | (b[5] & c4);
+
+    assign sum[6] = a[6] ^ b[6] ^ c5;
+    assign c6 = (a[6] & b[6]) | (a[6] & c5) | (b[6] & c5);
+
+    assign sum[7] = a[7] ^ b[7] ^ c6;
+    assign carry = (a[7] & b[7]) | (a[7] & c6) | (b[7] & c6);
 
 endmodule
