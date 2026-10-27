@@ -35,7 +35,7 @@ async def test_project(dut):
       await ClockCycles(dut.clk, 1)
 
       # Đọc kết quả ngõ ra
-      actual = dut.uo_out.value.integer
+      actual = dut.uo_out.value.to_unsigned()
       expected = a * b
 
       if actual != expected:
