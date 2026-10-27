@@ -1,53 +1,39 @@
 `default_nettype none
-`timescale 1ns / 1ps
+`timescale 1ns/1ps
 
-module tb ();
+module tb;
 
-  reg clk;
-  reg rst_n;
-  reg ena;
-  reg [7:0] ui_in;
-  reg [7:0] uio_in;
-  wire [7:0] uo_out;
-  wire [7:0] uio_out;
-  wire [7:0] uio_oe;
+  reg [3:0] a;
+  reg [3:0] b;
+  wire [7:0] p;
+
+  integer i, j;
+
+  // Instantiate the multiplier
+  A05_array_mult4x4 dut (
+    .a(a),
+    .b(b),
+    .p(p)
+  );
 
   initial begin
-    $dumpfile("tb.vcd");
+    $dumpfile("a05_waves.vcd");
     $dumpvars(0, tb);
-  end
 
-  always #5 clk = ~clk;
+    a = 0;
+    b = 0;
 
-  initial begin
-    clk = 0;
-    rst_n = 0;
-    ena = 1;
-    ui_in = 0;
-    uio_in = 0;
+    // Walk through all 4x4 combinations
+    for (i = 0; i < 16; i = i + 1) begin
+      for (j = 0; j < 16; j = j + 1) begin
+        a = i;
+        b = j;
+        #10;
+      end
+    end
 
     #20;
-    rst_n = 1;
-
-    #10;
-    ui_in = 8'h54;   // A=4, B=5, product=20
-    #20;
-
-    ui_in = 8'hF0;   // A=0, B=15
-    #20;
-
     $finish;
   end
-
-  tt_um_Son_nion user_project (
-      .ui_in  (ui_in),
-      .uo_out (uo_out),
-      .uio_in (uio_in),
-      .uio_out(uio_out),
-      .uio_oe (uio_oe),
-      .ena    (ena),
-      .clk    (clk),
-      .rst_n  (rst_n)
-  );
 
 endmodule
